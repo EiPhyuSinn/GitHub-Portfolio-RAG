@@ -1,0 +1,23 @@
+# LangChain & LLM (compatible versions)
+langchain==0.2.16
+langchain-groq==0.1.6
+langchain-community==0.2.16
+langchain-core==0.2.38
+
+# Vector Database
+pgvector==0.2.4
+psycopg2-binary==2.9.9
+
+# Embeddings (compatible versions)
+sentence-transformers==2.2.2
+huggingface-hub==0.17.3
+
+# HTTP & API
+requests==2.31.0
+
+# Environment
+python-dotenv==1.0.0
+
+# Utilities
+numpy>=1.21.0
+tqdm==4.66.1
