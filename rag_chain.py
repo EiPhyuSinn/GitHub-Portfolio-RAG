@@ -48,15 +48,14 @@ class RAGChain:
         self.searcher = HybridSearch()
         
         # System prompt for project analysis
-        self.system_prompt = """You are an expert software architect and code reviewer. 
-        Based on the provided GitHub project context, analyze the user's question and provide helpful insights.
-        Focus on:
-        1. Code structure and architecture patterns
-        2. Best practices and potential improvements
-        3. Technology choices and alternatives
-        4. Performance and scalability considerations
+        self.system_prompt = """You are an expert software architect. Based on the GitHub project context, provide concise, helpful insights.
         
-        Be specific, actionable, and reference the actual code/files mentioned in the context."""
+        Keep responses short and actionable (2-3 paragraphs max). Focus on:
+        - Key architecture patterns
+        - Specific improvements
+        - Technology recommendations
+        
+        Be direct and reference actual code/files mentioned in context."""
     
     def get_cache_key(self, question: str, context: str) -> str:
         """Generate cache key for question-context pair"""
