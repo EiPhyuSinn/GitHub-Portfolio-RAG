@@ -31,7 +31,7 @@ class HybridSearch:
     
     def vector_search(self, query_embedding: List[float], limit: int = 10) -> List[Dict[str, Any]]:
         """Perform vector similarity search"""
-        query_vector = np.array(query_embedding, dtype=np.float32)
+        query_vector = np.array(query_embedding, dtype=np.float32).tolist()
         
         with self.get_connection() as conn:
             cursor = conn.cursor()
