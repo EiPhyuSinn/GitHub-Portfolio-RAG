@@ -1,0 +1,21 @@
+# Flask UI Framework
+Flask>=2.3.0
+
+# Template engine
+Jinja2>=3.1.0
+
+# HTTP requests (for frontend)
+requests>=2.31.0
+
+# Existing RAG requirements
+langchain==0.2.16
+langchain-groq==0.1.6
+langchain-community==0.2.16
+langchain-core==0.2.38
+pgvector==0.2.4
+psycopg2-binary==2.9.12
+sentence-transformers==2.2.2
+huggingface-hub==0.17.3
+python-dotenv==1.0.0
+numpy>=1.21.0
+tqdm==4.66.1

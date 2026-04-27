@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Portfolio RAG System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <style>
+        .chat-container {
+            height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        .message {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">🔍 GitHub Portfolio RAG System</h1>
+                <p class="text-gray-600">Ask questions about indexed GitHub repositories</p>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Chat Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-semibold mb-4">💬 Chat</h2>
+                    
+                    <!-- Chat Messages -->
+                    <div id="chatContainer" class="chat-container mb-4 p-4 bg-gray-50 rounded-lg">
+                        <!-- Messages will be added here -->
+                    </div>
+                    
+                    <!-- Input Form -->
+                    <div class="flex gap-2">
+                        <input 
+                            type="text" 
+                            id="questionInput" 
+                            placeholder="Ask about the repositories..."
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            onkeypress="if(event.key === 'Enter') sendMessage()"
+                        >
+                        <button 
+                            onclick="sendMessage()" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        >
+                            Send
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Stats -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-4">📊 Statistics</h3>
+                    <div id="statsContainer" class="space-y-2">
+                        <div class="text-gray-500">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Repositories -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-4">📥 Repositories</h3>
+                    <div id="reposContainer" class="space-y-2">
+                        <div class="text-gray-500">Loading...</div>
+                    </div>
+                </div>
+
+                <!-- Ingest New Repo -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-4">➕ Add Repository</h3>
+                    <div class="space-y-3">
+                        <input 
+                            type="url" 
+                            id="repoUrl" 
+                            placeholder="https://github.com/username/repo"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        >
+                        <button 
+                            onclick="ingestRepository()" 
+                            class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                        >
+                            📥 Ingest
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Documents -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-4">🔍 Search Documents</h3>
+                    <div class="space-y-3">
+                        <input 
+                            type="text" 
+                            id="searchQuery" 
+                            placeholder="Search in documents..."
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        >
+                        <button 
+                            onclick="searchDocuments()" 
+                            class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                        >
+                            🔍 Search
+                        </button>
+                    </div>
+                    <div id="searchResults" class="mt-4 space-y-2 max-h-60 overflow-y-auto">
+                        <!-- Search results will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chatHistory = [];
+
+        // Load initial data
+        window.onload = function() {
+            loadStats();
+            loadRepositories();
+        };
+
+        // Chat functionality
+        function sendMessage() {
+            const input = document.getElementById('questionInput');
+            const question = input.value.trim();
+            
+            if (!question) return;
+            
+            // Add user message to chat
+            addMessage('user', question);
+            input.value = '';
+            
+            // Show loading
+            showLoading();
+            
+            // Send to backend
+            axios.post('/api/chat', { question: question })
+                .then(response => {
+                    hideLoading();
+                    if (response.data.response) {
+                        addMessage('assistant', response.data.response);
+                    } else {
+                        addMessage('error', 'Sorry, I encountered an error: ' + (response.data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    addMessage('error', 'Connection error: ' + error.message);
+                });
+        }
+
+        function addMessage(role, content) {
+            const container = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            
+            if (role === 'user') {
+                messageDiv.className = 'flex justify-end mb-4';
+                messageDiv.innerHTML = `
+                    <div class="max-w-lg bg-blue-600 text-white px-4 py-2 rounded-lg shadow">
+                        <div class="text-sm font-medium mb-1">👤 You</div>
+                        <div class="text-sm">${content}</div>
+                    </div>
+                `;
+            } else if (role === 'assistant') {
+                messageDiv.className = 'flex justify-start mb-4';
+                messageDiv.innerHTML = `
+                    <div class="max-w-lg bg-gray-100 text-gray-800 px-4 py-2 rounded-lg shadow">
+                        <div class="text-sm font-medium mb-1 text-gray-600">🤖 RAG System</div>
+                        <div class="text-sm whitespace-pre-line">${content}</div>
+                    </div>
+                `;
+            } else {
+                messageDiv.className = 'flex justify-start mb-4';
+                messageDiv.innerHTML = `
+                    <div class="max-w-lg bg-red-100 text-red-800 px-4 py-2 rounded-lg shadow">
+                        <div class="text-sm font-medium mb-1">❌ Error</div>
+                        <div class="text-sm">${content}</div>
+                    </div>
+                `;
+            }
+            
+            container.appendChild(messageDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function showLoading() {
+            const container = document.getElementById('chatContainer');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'flex justify-start mb-4';
+            loadingDiv.id = 'loadingMessage';
+            loadingDiv.innerHTML = `
+                <div class="max-w-lg bg-gray-100 text-gray-600 px-4 py-2 rounded-lg shadow">
+                    <div class="flex items-center gap-2">
+                        <div class="loader"></div>
+                        <span class="text-sm">🤖 RAG System is thinking...</span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(loadingDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function hideLoading() {
+            const loading = document.getElementById('loadingMessage');
+            if (loading) loading.remove();
+        }
+
+        // Repository ingestion
+        function ingestRepository() {
+            const input = document.getElementById('repoUrl');
+            const repoUrl = input.value.trim();
+            
+            if (!repoUrl) {
+                alert('Please enter a repository URL');
+                return;
+            }
+            
+            axios.post('/api/ingest', { repo_url: repoUrl })
+                .then(response => {
+                    if (response.data.status === 'success') {
+                        alert('✅ ' + response.data.message);
+                        input.value = '';
+                        loadRepositories(); // Refresh repo list
+                    } else {
+                        alert('❌ Error: ' + (response.data.error || 'Unknown error'));
+                    }
+                })
+                .catch(error => {
+                    alert('❌ Connection error: ' + error.message);
+                });
+        }
+
+        // Document search
+        function searchDocuments() {
+            const input = document.getElementById('searchQuery');
+            const query = input.value.trim();
+            
+            if (!query) return;
+            
+            axios.post('/api/search', { query: query, limit: 10 })
+                .then(response => {
+                    const resultsContainer = document.getElementById('searchResults');
+                    if (response.data.results && response.data.results.length > 0) {
+                        resultsContainer.innerHTML = response.data.results.map((result, index) => `
+                            <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                <div class="font-semibold text-sm text-blue-600 mb-1">
+                                    Result ${index + 1}: ${result.file_path}
+                                </div>
+                                <div class="text-xs text-gray-600 mb-2">
+                                    From: ${result.repo_url}
+                                </div>
+                                <div class="text-sm text-gray-800">
+                                    ${result.content.substring(0, 200)}${result.content.length > 200 ? '...' : ''}
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        resultsContainer.innerHTML = '<div class="text-gray-500">No results found</div>';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('searchResults').innerHTML = 
+                        '<div class="text-red-500">Search error: ' + error.message + '</div>';
+                });
+        }
+
+        // Load statistics
+        function loadStats() {
+            axios.get('/api/stats')
+                .then(response => {
+                    const container = document.getElementById('statsContainer');
+                    const stats = response.data;
+                    container.innerHTML = `
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">📄 Documents:</span>
+                            <span class="font-semibold">${stats.documents}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">📈 Queries:</span>
+                            <span class="font-semibold">${stats.queries}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">⚡ Avg Time:</span>
+                            <span class="font-semibold">${stats.avg_response_time}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">🎯 Score:</span>
+                            <span class="font-semibold">${stats.avg_faithfulness}</span>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Stats loading error:', error);
+                    const container = document.getElementById('statsContainer');
+                    container.innerHTML = '<div class="text-red-500 text-sm">❌ Failed to load stats</div>';
+                });
+        }
+
+        // Load repositories
+        function loadRepositories() {
+            axios.get('/api/repositories')
+                .then(response => {
+                    const container = document.getElementById('reposContainer');
+                    if (response.data.repositories && response.data.repositories.length > 0) {
+                        container.innerHTML = response.data.repositories.map(repo => `
+                            <div class="p-2 bg-gray-50 rounded border border-gray-200">
+                                <div class="text-sm font-medium text-blue-600 truncate">
+                                    ${repo.url}
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    ${repo.document_count} documents
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        container.innerHTML = '<div class="text-gray-500">No repositories</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Repository loading error:', error);
+                    const container = document.getElementById('reposContainer');
+                    container.innerHTML = '<div class="text-red-500 text-sm">❌ Failed to load repos</div>';
+                });
+        }
+    </script>
+</body>
+</html>
