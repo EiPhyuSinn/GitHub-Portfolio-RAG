@@ -16,6 +16,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - rag_network
 
   grafana:
     image: grafana/grafana:latest
@@ -25,13 +27,16 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-postgresql-datasource
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - rag_network
 
-app:
+  app:
     build: .
     container_name: rag_app
     environment:
@@ -44,6 +49,12 @@ app:
         condition: service_healthy
     working_dir: /app
     command: tail -f /dev/null  # Keep container running for interactive use
+    networks:
+      - rag_network
+
+networks:
+  rag_network:
+    driver: bridge
 
 volumes:
   postgres_data:
