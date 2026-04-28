@@ -166,6 +166,88 @@ comparisons and provides detailed performance analytics.
 ![Command Line Interface](images/cli_output.png)
 *Figure 2: Command line interface showing repository ingestion and querying*
 
+## Grafana Monitoring
+
+The RAG system includes real-time monitoring with Grafana dashboard to track performance metrics and system health.
+
+### Accessing Grafana
+
+1. **Start Services**:
+   ```bash
+   docker compose up -d postgres grafana
+   ```
+
+2. **Access Grafana**:
+   - **URL**: http://localhost:3000
+   - **Login**: admin / admin
+
+3. **Configure Data Source**:
+   - Go to **Configuration → Data Sources**
+   - Select **PostgreSQL**
+   - Set **Host**: `postgres:5432`
+   - **Database**: `rag_portfolio`
+   - **User**: `postgres`
+   - **Password**: `password`
+   - **Save & Test**
+
+4. **Import Dashboard**:
+   - Go to **Dashboards → Import**
+   - Upload `grafana_dashboard.json`
+   - Select PostgreSQL data source
+   - Click **Import**
+
+### Dashboard Features
+
+The Grafana dashboard provides real-time monitoring of:
+
+- **Response Latency**: Track LLM response times over time
+- **Faithfulness Score**: Monitor answer quality metrics
+- **Query Volume**: Track system usage patterns
+- **Document Count**: Monitor repository ingestion status
+
+### Setting Up Monitoring
+
+![Grafana PostgreSQL Setup](images/grafana_explore_postgresql.png)
+*Figure 3: Configuring PostgreSQL data source in Grafana*
+
+![Grafana Dashboard](images/grafana_daashboard.png)
+*Figure 4: Real-time RAG system monitoring dashboard*
+
+### Dashboard Queries
+
+The dashboard uses these key SQL queries:
+
+```sql
+-- Response Latency
+SELECT timestamp AT TIME ZONE 'UTC' AS time, response_latency_ms AS value 
+FROM metrics 
+WHERE response_latency_ms IS NOT NULL 
+ORDER BY timestamp
+
+-- Faithfulness Score
+SELECT AVG(faithfulness_score) as value 
+FROM metrics 
+WHERE faithfulness_score IS NOT NULL
+
+-- Query Volume
+SELECT DATE_TRUNC('hour', timestamp AT TIME ZONE 'UTC') AS time, COUNT(*) AS value 
+FROM metrics 
+GROUP BY 1 
+ORDER BY 1
+
+-- Document Count
+SELECT COUNT(*) as value 
+FROM documents
+```
+
+### Real-time Updates
+
+The dashboard automatically refreshes every 5 seconds, providing:
+- **Live performance metrics**
+- **Query response tracking**
+- **System health monitoring**
+- **Usage analytics**
+
 ## API Reference
 
 ### REST Endpoints
