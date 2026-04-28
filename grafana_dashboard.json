@@ -1,0 +1,130 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "PostgreSQL",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "targets": [
+        {
+          "datasource": "PostgreSQL",
+          "refId": "A",
+          "rawSql": "SELECT timestamp AS time, response_latency_ms AS value FROM metrics WHERE response_latency_ms IS NOT NULL ORDER BY timestamp",
+          "format": "time_series"
+        }
+      ],
+      "title": "Response Latency (ms)",
+      "type": "graph"
+    },
+    {
+      "datasource": "PostgreSQL",
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "targets": [
+        {
+          "datasource": "PostgreSQL",
+          "refId": "A",
+          "rawSql": "SELECT AVG(faithfulness_score) as value FROM metrics WHERE faithfulness_score IS NOT NULL",
+          "format": "table"
+        }
+      ],
+      "title": "Average Faithfulness Score",
+      "type": "stat"
+    },
+    {
+      "datasource": "PostgreSQL",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "targets": [
+        {
+          "datasource": "PostgreSQL",
+          "refId": "A",
+          "rawSql": "SELECT DATE_TRUNC('hour', timestamp) AS time, COUNT(*) AS value FROM metrics GROUP BY 1 ORDER BY 1",
+          "format": "time_series"
+        }
+      ],
+      "title": "Query Volume per Hour",
+      "type": "graph"
+    },
+    {
+      "datasource": "PostgreSQL",
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "targets": [
+        {
+          "datasource": "PostgreSQL",
+          "refId": "A",
+          "rawSql": "SELECT COUNT(*) as value FROM documents",
+          "format": "table"
+        }
+      ],
+      "title": "Total Documents",
+      "type": "stat"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 14,
+  "style": "dark",
+  "tags": ["rag", "llm", "github"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "GitHub Portfolio RAG System",
+  "version": 0
+}
