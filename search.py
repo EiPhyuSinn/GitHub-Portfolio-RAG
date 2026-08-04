@@ -182,6 +182,153 @@ class HybridSearch:
             current_length += len(context_piece)
         
         return "\n".join(context_parts)
+    
+    def rerank_results(self, query: str, results: List[Dict[str, Any]], top_k: int = 10) -> List[Dict[str, Any]]:
+        """
+        Re-rank search results using cross-encoder style scoring
+        This implements document re-ranking as a best practice
+        
+        Args:
+            query: Original search query
+            results: Initial search results from hybrid search
+            top_k: Number of top results to return after re-ranking
+        
+        Returns:
+            Re-ranked results with new scores
+        """
+        if not results:
+            return results
+        
+        query_embedding = self.embedding_model.encode(query, convert_to_numpy=True)
+        
+        # Calculate more precise similarity scores for re-ranking
+        for result in results:
+            content = result['content']
+            content_embedding = self.embedding_model.encode(content, convert_to_numpy=True)
+            
+            # Calculate cosine similarity
+            similarity = float(np.dot(query_embedding, content_embedding) / 
+                             (np.linalg.norm(query_embedding) * np.linalg.norm(content_embedding)))
+            
+            # Combine with existing RRF score
+            rrf_score = result.get('rrf_score', 0.0)
+            
+            # Weighted combination: 60% RRF, 40% re-ranking similarity
+            result['rerank_score'] = (rrf_score * 0.6) + (similarity * 0.4)
+        
+        # Sort by re-rank score
+        reranked = sorted(results, key=lambda x: x['rerank_score'], reverse=True)
+        
+        return reranked[:top_k]
+    
+    def hybrid_search_with_reranking(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Perform hybrid search with document re-ranking
+        This combines hybrid search with re-ranking for better results
+        
+        Args:
+            query: Search query string
+            limit: Maximum number of results to return
+        
+        Returns:
+            Re-ranked search results
+        """
+        print(f"Performing hybrid search with re-ranking for: '{query}'")
+        start_time = time.time()
+        
+        # Get initial results from hybrid search
+        initial_results = self.hybrid_search(query, limit=limit * 2)
+        
+        # Re-rank the results
+        reranked_results = self.rerank_results(query, initial_results, top_k=limit)
+        
+        end_time = time.time()
+        print(f"Search with re-ranking completed in {end_time - start_time:.3f} seconds")
+        print(f"Found {len(reranked_results)} results after re-ranking")
+        
+        return reranked_results
+    
+    def rewrite_query(self, query: str) -> str:
+        """
+        Rewrite user query to improve retrieval
+        This implements query expansion and clarification as a best practice
+        
+        Args:
+            query: Original user query
+        
+        Returns:
+            Rewritten query with expanded terms
+        """
+        # Common technical terms and their expansions
+        term_expansions = {
+            'db': ['database', 'sql', 'postgresql', 'mysql'],
+            'api': ['application programming interface', 'endpoint', 'rest', 'graphql'],
+            'ml': ['machine learning', 'artificial intelligence', 'ai', 'model'],
+            'ai': ['artificial intelligence', 'machine learning', 'ml', 'neural network'],
+            'ui': ['user interface', 'frontend', 'interface', 'gui'],
+            'ux': ['user experience', 'interface design', 'usability'],
+            'backend': ['server', 'api', 'database', 'service'],
+            'frontend': ['ui', 'client', 'interface', 'web'],
+            'docker': ['container', 'containerization', 'deployment'],
+            'k8s': ['kubernetes', 'container orchestration', 'k8s'],
+            'ci/cd': ['continuous integration', 'continuous deployment', 'pipeline'],
+            'test': ['testing', 'unit test', 'integration test', 'pytest'],
+            'auth': ['authentication', 'authorization', 'security', 'login'],
+            'sec': ['security', 'authentication', 'authorization', 'encryption'],
+        }
+        
+        query_lower = query.lower()
+        expanded_terms = []
+        
+        # Find and expand technical terms
+        for term, expansions in term_expansions.items():
+            if term in query_lower:
+                # Add expansions that aren't already in the query
+                for expansion in expansions:
+                    if expansion not in query_lower:
+                        expanded_terms.append(expansion)
+        
+        # If no expansions found, return original query
+        if not expanded_terms:
+            return query
+        
+        # Create rewritten query with expanded terms
+        rewritten_query = f"{query} " + " ".join(expanded_terms[:3])  # Limit to 3 expansions
+        
+        print(f"Query rewritten: '{query}' -> '{rewritten_query}'")
+        return rewritten_query
+    
+    def hybrid_search_with_query_rewriting(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Perform hybrid search with query rewriting and re-ranking
+        This combines query expansion, hybrid search, and re-ranking
+        
+        Args:
+            query: Search query string
+            limit: Maximum number of results to return
+        
+        Returns:
+            Search results with query rewriting applied
+        """
+        print(f"Performing search with query rewriting for: '{query}'")
+        start_time = time.time()
+        
+        # Rewrite the query
+        rewritten_query = self.rewrite_query(query)
+        
+        # Use rewritten query for search
+        results = self.hybrid_search_with_reranking(rewritten_query, limit)
+        
+        # Add metadata about query was rewritten
+        for result in results:
+            result['query_rewritten'] = (rewritten_query != query)
+            result['original_query'] = query
+            result['rewritten_query'] = rewritten_query
+        
+        end_time = time.time()
+        print(f"Search with query rewriting completed in {end_time - start_time:.3f} seconds")
+        
+        return results
 
 
 if __name__ == "__main__":

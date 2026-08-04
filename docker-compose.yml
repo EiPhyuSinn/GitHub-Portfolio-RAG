@@ -41,14 +41,17 @@ services:
     container_name: rag_app
     environment:
       - DATABASE_URL=postgresql://postgres:password@postgres:5432/rag_portfolio
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    ports:
+      - "5000:5000"
     volumes:
       - .:/app
-      - ./venv:/app/venv
     depends_on:
       postgres:
         condition: service_healthy
     working_dir: /app
-    command: tail -f /dev/null  # Keep container running for interactive use
+    command: python flask_app.py
     networks:
       - rag_network
 

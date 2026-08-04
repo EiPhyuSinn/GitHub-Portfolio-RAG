@@ -181,5 +181,90 @@ def get_repositories():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/feedback', methods=['POST'])
+def submit_feedback():
+    """Submit user feedback for a response"""
+    try:
+        data = request.get_json()
+        question = data.get('question', '')
+        response = data.get('response', '')
+        rating = data.get('rating', None)
+        feedback_text = data.get('feedback_text', '')
+        
+        if not question or not response:
+            return jsonify({'error': 'Question and response are required'}), 400
+        
+        if rating is None or not (1 <= rating <= 5):
+            return jsonify({'error': 'Rating must be between 1 and 5'}), 400
+        
+        conn = searcher.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO user_feedback (question, response, rating, feedback_text)
+            VALUES (%s, %s, %s, %s)
+        """, (question, response, rating, feedback_text))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'message': 'Feedback submitted successfully',
+            'status': 'success'
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/feedback/stats')
+def get_feedback_stats():
+    """Get feedback statistics"""
+    try:
+        conn = searcher.get_connection()
+        cursor = conn.cursor()
+        
+        # Average rating
+        cursor.execute("SELECT AVG(rating) as avg_rating FROM user_feedback")
+        avg_rating = cursor.fetchone()['avg_rating'] or 0
+        
+        # Total feedback count
+        cursor.execute("SELECT COUNT(*) as count FROM user_feedback")
+        total_feedback = cursor.fetchone()['count']
+        
+        # Rating distribution
+        cursor.execute("""
+            SELECT rating, COUNT(*) as count
+            FROM user_feedback
+            GROUP BY rating
+            ORDER BY rating
+        """)
+        rating_distribution = {row['rating']: row['count'] for row in cursor.fetchall()}
+        
+        # Recent feedback
+        cursor.execute("""
+            SELECT question, rating, feedback_text, timestamp
+            FROM user_feedback
+            ORDER BY timestamp DESC
+            LIMIT 5
+        """)
+        recent_feedback = cursor.fetchall()
+        
+        conn.close()
+        
+        return jsonify({
+            'average_rating': f"{avg_rating:.2f}",
+            'total_feedback': total_feedback,
+            'rating_distribution': rating_distribution,
+            'recent_feedback': [
+                {
+                    'question': row['question'],
+                    'rating': row['rating'],
+                    'feedback_text': row['feedback_text'],
+                    'timestamp': row['timestamp'].isoformat() if row['timestamp'] else None
+                } for row in recent_feedback
+            ]
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

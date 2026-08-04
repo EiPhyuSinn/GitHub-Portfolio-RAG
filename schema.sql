@@ -34,3 +34,16 @@ CREATE INDEX IF NOT EXISTS idx_metrics_faithfulness ON metrics(faithfulness_scor
 
 -- Full-text search index
 CREATE INDEX IF NOT EXISTS idx_documents_content_fts ON documents USING GIN(to_tsvector('english', content));
+
+-- User feedback table for collecting user ratings
+CREATE TABLE IF NOT EXISTS user_feedback (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    question TEXT NOT NULL,
+    response TEXT NOT NULL,
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+    feedback_text TEXT,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create index for feedback
+CREATE INDEX IF NOT EXISTS idx_feedback_timestamp ON user_feedback(timestamp);

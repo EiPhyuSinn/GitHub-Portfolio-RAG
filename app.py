@@ -11,7 +11,7 @@ from search import HybridSearch
 # Page config
 st.set_page_config(
     page_title="GitHub Portfolio RAG",
-    page_icon="🔍",
+    page_icon="�",
     layout="centered"
 )
 
@@ -22,12 +22,12 @@ if 'searcher' not in st.session_state:
     st.session_state.searcher = HybridSearch()
 
 def main():
-    st.title("🔍 GitHub Portfolio RAG System")
+    st.title("GitHub Portfolio RAG System")
     st.markdown("Ask questions about indexed GitHub repositories")
     
     # Sidebar
     with st.sidebar:
-        st.header("📊 System Info")
+        st.header("System Info")
         
         # Show database stats
         try:
@@ -38,13 +38,13 @@ def main():
                 cursor.execute("SELECT COUNT(*) FROM metrics")
                 metrics_count = cursor.fetchone()[0]
                 
-                st.metric("📄 Documents", doc_count)
-                st.metric("📈 Queries", metrics_count)
+                st.metric("Documents", doc_count)
+                st.metric("Queries", metrics_count)
         except Exception as e:
             st.error(f"Database error: {e}")
     
     # Main chat interface
-    st.header("💬 Ask About GitHub Repositories")
+    st.header("Ask About GitHub Repositories")
     
     # Chat history
     if 'messages' not in st.session_state:
@@ -73,10 +73,10 @@ def main():
                     # Show metrics
                     col1, col2 = st.columns(2)
                     with col1:
-                        st.metric("⚡ Response Time", f"{response_time:.2f}s")
+                        st.metric("Response Time", f"{response_time:.2f}s")
                     with col2:
                         if 'context_used' in result:
-                            st.metric("📄 Context Chunks", len(result['context_used']))
+                            st.metric("Context Chunks", len(result['context_used']))
                     
                 except Exception as e:
                     st.error(f"Error: {str(e)}")
@@ -85,31 +85,31 @@ def main():
         st.rerun()
     
     # Repository management section
-    st.header("📥 Repository Management")
+    st.header("Repository Management")
     col1, col2 = st.columns(2)
     
     with col1:
         st.subheader("Add Repository")
         repo_url = st.text_input("GitHub Repository URL", placeholder="https://github.com/username/repo")
-        if st.button("📥 Ingest Repository", type="primary"):
+        if st.button("Ingest Repository", type="primary"):
             if repo_url:
                 with st.spinner("Ingesting repository..."):
                     try:
                         from ingest import GitHubDataLoader
                         loader = GitHubDataLoader()
                         loader.ingest_repository(repo_url)
-                        st.success(f"✅ Successfully ingested {repo_url}")
+                        st.success(f"Successfully ingested {repo_url}")
                         time.sleep(2)
                         st.rerun()
                     except Exception as e:
-                        st.error(f"❌ Error: {str(e)}")
+                        st.error(f"Error: {str(e)}")
             else:
                 st.warning("Please enter a repository URL")
     
     with col2:
         st.subheader("Search Documents")
         search_query = st.text_input("Search Query", placeholder="Search in documents...")
-        if st.button("🔍 Search"):
+        if st.button("Search"):
             if search_query:
                 with st.spinner("Searching..."):
                     try:
@@ -121,7 +121,7 @@ def main():
                                 st.code(result['content'][:500] + "..." if len(result['content']) > 500 else result['content'])
                                 st.caption(f"Repository: {result['repo_url']}")
                     except Exception as e:
-                        st.error(f"❌ Search error: {str(e)}")
+                        st.error(f"Search error: {str(e)}")
 
 if __name__ == "__main__":
     main()

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-echo "🚀 Running GitHub Portfolio RAG System Test"
+echo "Running GitHub Portfolio RAG System Test"
 echo "=========================================="
 
 # Step 1: Test database connection
 echo "1. Testing database connection..."
-docker-compose exec postgres psql -U postgres -d rag_portfolio -c "SELECT '✅ Database connected!' as status;"
+docker-compose exec postgres psql -U postgres -d rag_portfolio -c "SELECT 'Database connected!' as status;"
 
 # Step 2: Show tables
 echo -e "\n2. Checking tables..."
@@ -27,9 +27,9 @@ from ingest import GitHubDataLoader
 loader = GitHubDataLoader()
 try:
     loader.ingest_repository(\"https://github.com/octocat/Hello-World\")
-    print(\"✅ Ingestion completed!\")
+    print(\"Ingestion completed!\")
 except Exception as e:
-    print(f\"❌ Ingestion failed: {e}\")
+    print(f\"Ingestion failed: {e}\")
 '
 "
 
@@ -37,7 +37,7 @@ except Exception as e:
 echo -e "\n4. Checking ingested data..."
 docker-compose exec postgres psql -U postgres -d rag_portfolio -c "SELECT COUNT(*) as document_count FROM documents;"
 
-echo -e "\n🎉 Test completed!"
+echo -e "\nTest completed!"
 echo "You can now:"
 echo "- Access Grafana: http://localhost:3000 (admin/admin)"
 echo "- Check database: docker-compose exec postgres psql -U postgres -d rag_portfolio"

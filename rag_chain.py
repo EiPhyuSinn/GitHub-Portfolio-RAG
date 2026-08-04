@@ -12,8 +12,10 @@ from datetime import datetime, timedelta
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from langchain_groq import ChatGroq
-from langchain.schema import HumanMessage, SystemMessage
-from langchain.prompts import PromptTemplate
+# from langchain.schema import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
+# from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
 
 # Load environment variables

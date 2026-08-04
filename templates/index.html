@@ -37,7 +37,7 @@
         <!-- Header -->
         <header class="mb-8">
             <div class="bg-white rounded-lg shadow-md p-6">
-                <h1 class="text-3xl font-bold text-gray-800 mb-2">🔍 GitHub Portfolio RAG System</h1>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">GitHub Portfolio RAG System</h1>
                 <p class="text-gray-600">Ask questions about indexed GitHub repositories</p>
             </div>
         </header>
@@ -46,7 +46,7 @@
             <!-- Chat Section -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <h2 class="text-xl font-semibold mb-4">💬 Chat</h2>
+                    <h2 class="text-xl font-semibold mb-4">Chat</h2>
                     
                     <!-- Chat Messages -->
                     <div id="chatContainer" class="chat-container mb-4 p-4 bg-gray-50 rounded-lg">
@@ -76,7 +76,7 @@
             <div class="space-y-6">
                 <!-- Stats -->
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold mb-4">📊 Statistics</h3>
+                    <h3 class="text-lg font-semibold mb-4">Statistics</h3>
                     <div id="statsContainer" class="space-y-2">
                         <div class="text-gray-500">Loading...</div>
                     </div>
@@ -84,7 +84,7 @@
 
                 <!-- Repositories -->
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold mb-4">📥 Repositories</h3>
+                    <h3 class="text-lg font-semibold mb-4">Repositories</h3>
                     <div id="reposContainer" class="space-y-2">
                         <div class="text-gray-500">Loading...</div>
                     </div>
@@ -92,7 +92,7 @@
 
                 <!-- Ingest New Repo -->
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold mb-4">➕ Add Repository</h3>
+                    <h3 class="text-lg font-semibold mb-4">Add Repository</h3>
                     <div class="space-y-3">
                         <input 
                             type="url" 
@@ -104,14 +104,14 @@
                             onclick="ingestRepository()" 
                             class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                         >
-                            📥 Ingest
+                            Ingest
                         </button>
                     </div>
                 </div>
 
                 <!-- Search Documents -->
                 <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold mb-4">🔍 Search Documents</h3>
+                    <h3 class="text-lg font-semibold mb-4">Search Documents</h3>
                     <div class="space-y-3">
                         <input 
                             type="text" 
@@ -123,7 +123,7 @@
                             onclick="searchDocuments()" 
                             class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
                         >
-                            🔍 Search
+                            Search
                         </button>
                     </div>
                     <div id="searchResults" class="mt-4 space-y-2 max-h-60 overflow-y-auto">
@@ -181,7 +181,7 @@
                 messageDiv.className = 'flex justify-end mb-4';
                 messageDiv.innerHTML = `
                     <div class="max-w-lg bg-blue-600 text-white px-4 py-2 rounded-lg shadow">
-                        <div class="text-sm font-medium mb-1">👤 You</div>
+                        <div class="text-sm font-medium mb-1">You</div>
                         <div class="text-sm">${content}</div>
                     </div>
                 `;
@@ -189,7 +189,7 @@
                 messageDiv.className = 'flex justify-start mb-4';
                 messageDiv.innerHTML = `
                     <div class="max-w-lg bg-gray-100 text-gray-800 px-4 py-2 rounded-lg shadow">
-                        <div class="text-sm font-medium mb-1 text-gray-600">🤖 RAG System</div>
+                        <div class="text-sm font-medium mb-1 text-gray-600">RAG System</div>
                         <div class="text-sm whitespace-pre-line">${content}</div>
                     </div>
                 `;
@@ -197,7 +197,7 @@
                 messageDiv.className = 'flex justify-start mb-4';
                 messageDiv.innerHTML = `
                     <div class="max-w-lg bg-red-100 text-red-800 px-4 py-2 rounded-lg shadow">
-                        <div class="text-sm font-medium mb-1">❌ Error</div>
+                        <div class="text-sm font-medium mb-1">Error</div>
                         <div class="text-sm">${content}</div>
                     </div>
                 `;
@@ -216,7 +216,7 @@
                 <div class="max-w-lg bg-gray-100 text-gray-600 px-4 py-2 rounded-lg shadow">
                     <div class="flex items-center gap-2">
                         <div class="loader"></div>
-                        <span class="text-sm">🤖 RAG System is thinking...</span>
+                        <span class="text-sm">RAG System is thinking...</span>
                     </div>
                 </div>
             `;
@@ -242,15 +242,15 @@
             axios.post('/api/ingest', { repo_url: repoUrl })
                 .then(response => {
                     if (response.data.status === 'success') {
-                        alert('✅ ' + response.data.message);
+                        alert('Success: ' + response.data.message);
                         input.value = '';
                         loadRepositories(); // Refresh repo list
                     } else {
-                        alert('❌ Error: ' + (response.data.error || 'Unknown error'));
+                        alert('Error: ' + (response.data.error || 'Unknown error'));
                     }
                 })
                 .catch(error => {
-                    alert('❌ Connection error: ' + error.message);
+                    alert('Connection error: ' + error.message);
                 });
         }
 
@@ -296,19 +296,19 @@
                     const stats = response.data;
                     container.innerHTML = `
                         <div class="flex justify-between">
-                            <span class="text-gray-600">📄 Documents:</span>
+                            <span class="text-gray-600">Documents:</span>
                             <span class="font-semibold">${stats.documents}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">📈 Queries:</span>
+                            <span class="text-gray-600">Queries:</span>
                             <span class="font-semibold">${stats.queries}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">⚡ Avg Time:</span>
+                            <span class="text-gray-600">Avg Time:</span>
                             <span class="font-semibold">${stats.avg_response_time}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-gray-600">🎯 Score:</span>
+                            <span class="text-gray-600">Score:</span>
                             <span class="font-semibold">${stats.avg_faithfulness}</span>
                         </div>
                     `;
@@ -316,7 +316,7 @@
                 .catch(error => {
                     console.error('Stats loading error:', error);
                     const container = document.getElementById('statsContainer');
-                    container.innerHTML = '<div class="text-red-500 text-sm">❌ Failed to load stats</div>';
+                    container.innerHTML = '<div class="text-red-500 text-sm">Failed to load stats</div>';
                 });
         }
 
@@ -343,7 +343,7 @@
                 .catch(error => {
                     console.error('Repository loading error:', error);
                     const container = document.getElementById('reposContainer');
-                    container.innerHTML = '<div class="text-red-500 text-sm">❌ Failed to load repos</div>';
+                    container.innerHTML = '<div class="text-red-500 text-sm">Failed to load repos</div>';
                 });
         }
     </script>

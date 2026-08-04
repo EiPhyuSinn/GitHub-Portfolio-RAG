@@ -43,7 +43,7 @@ class GitHubDataLoader:
         
         try:
             response = requests.get(url, headers=self.headers)
-            response.raise_for_status()
+            # response.raise_for_status()
             
             # Get download URL for README content
             readme_data = response.json()
@@ -66,9 +66,10 @@ class GitHubDataLoader:
         
         try:
             response = requests.get(url, headers=self.headers)
-            response.raise_for_status()
+            # response.raise_for_status()
             
             tree_data = response.json()
+            print(f"Fetched file tree with {len(tree_data.get('tree', []))} items")
             files = []
             
             for item in tree_data.get("tree", []):
@@ -88,7 +89,8 @@ class GitHubDataLoader:
         """Create Document objects from README and file tree"""
         repo_info = self.extract_repo_info(repo_url)
         owner, repo = repo_info["owner"], repo_info["repo"]
-        
+        print(f"Extracted owner: {owner}, repo: {repo}")
+      
         documents = []
         
         # Fetch README content
@@ -108,6 +110,8 @@ class GitHubDataLoader:
             for i, chunk in enumerate(readme_chunks):
                 chunk_metadata = readme_metadata.copy()
                 chunk_metadata["chunk_index"] = i
+
+                print(f'Creating document chunk {i} for README.md with metadata: {chunk_metadata}')
                 documents.append(Document(page_content=chunk, metadata=chunk_metadata))
         
         # Fetch file tree
@@ -213,5 +217,5 @@ if __name__ == "__main__":
     loader = GitHubDataLoader()
     
     # Test with a sample repository
-    test_repo = "https://github.com/langchain-ai/langchain"
+    test_repo = "https://github.com/EiPhyuSinn/GitHub-Portfolio-RAG"
     loader.ingest_repository(test_repo)

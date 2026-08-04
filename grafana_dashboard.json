@@ -97,6 +97,106 @@
       ],
       "title": "Total Documents",
       "type": "stat"
+    },
+    {
+      "datasource": "PostgreSQL",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "targets": [
+        {
+          "datasource": "PostgreSQL",
+          "refId": "A",
+          "rawSql": "SELECT DATE_TRUNC('hour', timestamp) AS time, AVG(faithfulness_score) AS value FROM metrics WHERE faithfulness_score IS NOT NULL GROUP BY 1 ORDER BY 1",
+          "format": "time_series"
+        }
+      ],
+      "title": "Faithfulness Score Over Time",
+      "type": "graph"
+    },
+    {
+      "datasource": "PostgreSQL",
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 16
+      },
+      "id": 6,
+      "targets": [
+        {
+          "datasource": "PostgreSQL",
+          "refId": "A",
+          "rawSql": "SELECT AVG(rating) as value FROM user_feedback WHERE rating IS NOT NULL",
+          "format": "table"
+        }
+      ],
+      "title": "Average User Rating",
+      "type": "stat"
+    },
+    {
+      "datasource": "PostgreSQL",
+      "gridPos": {
+        "h": 8,
+        "w": 18,
+        "x": 0,
+        "y": 24
+      },
+      "id": 7,
+      "targets": [
+        {
+          "datasource": "PostgreSQL",
+          "refId": "A",
+          "rawSql": "SELECT rating, COUNT(*) as value FROM user_feedback GROUP BY rating ORDER BY rating",
+          "format": "table"
+        }
+      ],
+      "title": "User Rating Distribution",
+      "type": "table"
+    },
+    {
+      "datasource": "PostgreSQL",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "id": 8,
+      "targets": [
+        {
+          "datasource": "PostgreSQL",
+          "refId": "A",
+          "rawSql": "SELECT repo_url, COUNT(*) as value FROM documents GROUP BY repo_url ORDER BY value DESC LIMIT 10",
+          "format": "table"
+        }
+      ],
+      "title": "Top Repositories by Document Count",
+      "type": "table"
+    },
+    {
+      "datasource": "PostgreSQL",
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 32
+      },
+      "id": 9,
+      "targets": [
+        {
+          "datasource": "PostgreSQL",
+          "refId": "A",
+          "rawSql": "SELECT COUNT(*) as value FROM metrics",
+          "format": "table"
+        }
+      ],
+      "title": "Total Queries",
+      "type": "stat"
     }
   ],
   "refresh": "5s",
